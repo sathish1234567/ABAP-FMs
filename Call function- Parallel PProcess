@@ -1,0 +1,48 @@
+
+  CALL FUNCTION 'ZFM_OBJECT_CREATE'
+      STARTING NEW TASK 'T1'
+      CALLING on_end_task ON END OF TASK
+      EXPORTING
+        documentdata         = ls_doc
+        pf_http_dest         = ' '           "'SAPHTTPA'
+        defaultclass         = abap_true
+*      IMPORTING
+*       DOCUMENTNUMBER       = lv_doc
+*       RETURN               = ls_return
+      TABLES
+        objectlinks          = lt_objlink
+        characteristicvalues = lt_charval
+        classallocations     = lt_clas
+        documentfiles        = lt_file.
+
+*      WAIT UNTIL  ME->GO = abap_true.
+    WAIT FOR ASYNCHRONOUS TASKS UNTIL me->go = abap_true.
+
+    IF me->doc_num IS NOT INITIAL.
+      ex_docnum = me->doc_num.
+    ENDIF.
+
+
+  method ON_END_TASK.
+
+ DATA:         LS_RETURN  TYPE BAPIRET2,
+               LV_DOC_NUM TYPE BAPI_DOC_AUX-DOCNUMBER.
+
+    IF P_TASK = 'T1'.
+*      BREAK-POINT.
+      RECEIVE RESULTS FROM FUNCTION 'ZFM_OBJECT_CREATE'
+      IMPORTING
+         return         = LS_RETURN
+         documentnumber = LV_DOC_NUM.
+
+      IF LV_DOC_NUM IS NOT INITIAL.
+        ME->DOC_NUM = LV_DOC_NUM.
+      ENDIF.
+      ME->GO = ABAP_TRUE.
+    ENDIF.
+
+            SET SCREEN 0.
+            LEAVE SCREEN. 
+
+  endmethod. 
+
